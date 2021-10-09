@@ -1,0 +1,53 @@
+---
+title: "Assignment2 visualization"
+author: "Kosuke Sasaki"
+date: "2021/10/8"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+```{r results='hide', message=FALSE}
+library(tidyverse)
+health_spending <- read_csv("totalspendinginusd.csv")
+child_mortality <- read_csv("child_mortality_0_5_year_olds_dying_per_1000_born.csv")
+health_spend_long <- pivot_longer(health_spending, cols = 2:17, names_to ="year", values_to = "health_spending")
+child_mortality <- select(child_mortality,country, 197:212)
+child_mortality_long <- pivot_longer(child_mortality, cols = 2:17, names_to ="year", values_to = "mortality")
+data <- full_join(child_mortality_long, health_spend_long, by=c("country","year"))
+
+data2 <- filter(data, country %in% c("Angola","United Kingdom","Sierra Leone","Japan", "Switzerland","Canada", "United States","Malaysia","China","Vietnam" ))
+data_sub1 <- filter(data, country %in% c("Angola","Sierra Leone","Malaysia","China","Vietnam" ))
+data_sub2 <- filter(data, country %in% c("United Kingdom","Japan", "Switzerland","Canada", "United States","Malaysia","China","Vietnam" ))
+```
+
+## Relationship between child's mortality and health expenditure 
+
+In this presentation, we will see the relationship between child's mortality rate under 5 years of age per 1000 live births and the average health expenditure (in US$) per person in each country from 1994 to 2009.
+First, we will see the relationships in developing countries (China, Vietnam, and Malaysia) and some least developed countries (Sierra Leone and Angola) and compare them.
+
+```{r}
+ggplot(data = data_sub1)+
+  geom_point(mapping = aes(x=health_spending, y=mortality, color=country))+
+  geom_path(mapping = aes(x=health_spending, y=mortality, color=country))+
+    scale_color_manual(values = c("Angola"="tan","Sierra Leone"="steelblue","Malaysia"="red","China"="blue","Vietnam"="green")) +
+  labs(x = "Health Expenditure per person (US$)", y = "0-5 years-old Mortality per 1000 live birhts")
+```
+<br>
+As you can see above, Sierra Leone and Angola see a rapid improvement in the mortality rate. However, the mortality rates of both countries are far higher than those of China, Vietnam, and Malaysia. Notably, the health expenditure in Vietnam is similar to Sierra Leone and lower than Angola, but the mortality rate is far less than in those countries.
+<br><br>
+
+Next, we will see the relationships in some developed countries (Canada, United States, United Kingdom, Japan, and Switzerland) and developing countries and compare them as below.
+
+```{r}
+ggplot(data = data_sub2)+
+  geom_point(mapping = aes(x=health_spending, y=mortality, color=country))+
+  geom_path(mapping = aes(x=health_spending, y=mortality, color=country))+
+  labs(x = "Health Expenditure per person (US$)", y = "0-5 years-old Mortality per 1000 live birhts")+
+  scale_color_manual(values = c("United Kingdom"="black","Japan"="gold", "Switzerland"="coral","Canada"="purple", "United States"="blue4","Malaysia"="red","China"="blue","Vietnam"="green")) 
+```
+<br>
+(Note that the scale of y axis is different from the first graph, because least developed countries are excluded in this graph.)<br> In the developed countries, they did not experience improvement in mortality as large as in developing countries during 1994 to 2009, because they have already attained low mortality rate to some extent. Among them, Japan has the lowest mortality rate, and the United States has the worst in spite of their highest health expenditure. In addition, the mortality rate in the U.S. is close to the one in Malaysia, while the health expenditure is almost 20 times as high as the one in Malaysia.
